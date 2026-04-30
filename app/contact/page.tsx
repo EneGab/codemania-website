@@ -23,7 +23,7 @@ export default function ContactPage() {
             <div className="space-y-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Email</p>
-                <a href="mailto:hello@codemania.com" className="text-dark font-medium hover:text-[#F4511E] transition-colors">hello@codemania.com</a>
+                <a href="mailto:hello@codemania.com" className="text-dark font-medium hover:text-[#F4511E] transition-colors">info@codemania.com.ng</a>
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Nigeria</p>
