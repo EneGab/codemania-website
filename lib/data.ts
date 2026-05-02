@@ -219,7 +219,7 @@ export const footerLinks = {
     { label: "Services", href: "/services" },
   ],
   contact: [
-    { label: "hello@codemania.com", href: "mailto:hello@codemania.com" },
+    { label: "info@codemania.com.ng", href: "mailto:info@codemania.com.ng" },
     { label: "Nigeria +234 7056473519", href: "tel:+2347056473519" },
     { label: "US +1 7176547234", href: "tel:+17176547234" },
   ],
