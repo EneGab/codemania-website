@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Syne } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -7,12 +7,7 @@ import Footer from "@/components/layout/Footer";
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
-  display: "swap",
-});
-
-const syne = Syne({
-  subsets: ["latin"],
-  variable: "--font-syne",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
   display: "swap",
 });
 
@@ -31,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${syne.variable}`}>
+    <html lang="en" className={dmSans.variable}>
       <body>
         <Navbar />
         <main className="pt-16">{children}</main>

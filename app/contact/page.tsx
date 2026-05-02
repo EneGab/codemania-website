@@ -12,7 +12,7 @@ export default function ContactPage() {
       <div className="max-w-5xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
-            <SectionLabel text="Get In Touch" className="mb-6" />
+            <SectionLabel text="Get In Touch" className="mb-6"  />
             <h1 className="font-display font-bold text-5xl lg:text-6xl text-dark leading-tight mb-6">
               Let&apos;s Build Something Great Together
             </h1>

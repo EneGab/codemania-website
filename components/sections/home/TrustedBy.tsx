@@ -1,33 +1,52 @@
-import SectionLabel from "@/components/ui/SectionLabel";
+import Image from "next/image";
 
-const clients = [
-  { name: "Kuda", abbr: "K", bg: "bg-green-100 text-green-700" },
-  { name: "AI Corp", abbr: "AI", bg: "bg-blue-100 text-blue-700" },
-  { name: "Fintech+", abbr: "F+", bg: "bg-purple-100 text-purple-700" },
-  { name: "DataPro", abbr: "DP", bg: "bg-orange-100 text-orange-700" },
-  { name: "TechBase", abbr: "TB", bg: "bg-red-100 text-red-700" },
-  { name: "CloudEx", abbr: "CE", bg: "bg-teal-100 text-teal-700" },
+const logos = [
+  "/images/logo 1.png",
+  "/images/logo 2.png",
+  "/images/logo 3.png",
+  "/images/logo 4.png",
+  "/images/logo 5.png",
+  "/images/logo 6.png",
+  "/images/logo 7.png",
+  "/images/logo 8.png",
+  "/images/logo 9.png",
 ];
 
 export default function TrustedBy() {
   return (
-    <section className="py-20 lg:py-24 bg-white">
+    <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
-        <div className="text-center mb-14">
-          <SectionLabel text="Our Clients" center className="mb-5" />
-          <h2 className="font-display font-bold text-3xl lg:text-4xl text-dark">
-            Trusted by Leading<br />Organizations Across Africa and Beyond
-          </h2>
-          <p className="text-gray-400 text-sm mt-3">100+ clients across 5 countries trust CodeMania</p>
+        <div className="flex items-center gap-2 mb-6">
+          <span className="text-[#F4511E] text-xs">✤</span>
+          <span className="text-[11px] font-semibold tracking-[0.15em] uppercase text-gray-400">
+            We Are Trusted.
+          </span>
         </div>
+        <h2
+          className="font-sans font-bold text-[#0A0A0A] mb-4"
+          style={{ fontSize: "clamp(1.8rem, 3vw, 2.8rem)" }}
+        >
+          Trusted by Leading Organizations
+          <br />
+          Across Africa and Beyond
+        </h2>
+        <p className="text-gray-500 text-sm mb-14 max-w-sm leading-relaxed">
+          We build for Startup and enterprise businesses in diverse industries.
+        </p>
 
-        <div className="flex flex-wrap justify-center gap-5 lg:gap-8">
-          {clients.map((c, i) => (
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-x-12 gap-y-10 items-center">
+          {logos.map((logo, i) => (
             <div
               key={i}
-              className={`w-16 h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center font-display font-bold text-sm lg:text-base ${c.bg} hover:scale-110 transition-transform cursor-default`}
+              className="flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300"
             >
-              {c.abbr}
+              <Image
+                src={logo}
+                alt={`Partner logo ${i + 1}`}
+                width={120}
+                height={50}
+                className="w-full h-auto object-contain max-h-12"
+              />
             </div>
           ))}
         </div>
