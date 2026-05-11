@@ -2,20 +2,86 @@
 
 import { useState } from "react";
 
-export default function ContactPage() {
-  const [form, setForm] = useState({
-    firstName: "", lastName: "", email: "", company: "", message: "",
-  });
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  company: string;
+  message: string;
+}
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+interface FormErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  message?: string;
+}
+
+export default function ContactPage() {
+  const [form, setForm] = useState<FormData>({
+    firstName: "", lastName: "", email: "",
+    phone: "", company: "", message: "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [serverError, setServerError] = useState("");
+
+  const validate = (field: string, value: string): string => {
+    switch (field) {
+      case "firstName":
+      case "lastName":
+        if (!value.trim()) return "This field cannot be empty.";
+        if (!/^[a-zA-Z\s\-']{2,50}$/.test(value.trim()))
+          return "Please enter a valid name.";
+        return "";
+      case "email":
+        if (!value.trim()) return "Email cannot be empty.";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Please enter a valid email address.";
+        return "";
+      case "phone":
+        if (!value.trim()) return "Phone number cannot be empty.";
+        if (!/^[\d\s\+\-\(\)]{7,15}$/.test(value))
+          return "Phone number must contain only numbers.";
+        return "";
+      case "message":
+        if (!value.trim()) return "Message cannot be empty.";
+        if (value.trim().length < 10)
+          return "Message must be at least 10 characters.";
+        return "";
+      default:
+        return "";
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    const error = validate(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async () => {
+    const newErrors: FormErrors = {};
+    (["firstName", "lastName", "email", "phone", "message"] as const).forEach(
+      (field) => {
+        const error = validate(field, form[field]);
+        if (error) newErrors[field] = error;
+      }
+    );
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     setStatus("loading");
-    setErrorMsg("");
+    setServerError("");
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -23,23 +89,39 @@ export default function ContactPage() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
+
       if (!res.ok) {
-        setStatus("error");
-        setErrorMsg(data.error || "Something went wrong.");
+        if (data.errors) {
+          setErrors(data.errors);
+          setStatus("idle");
+        } else {
+          setServerError(data.error || "Something went wrong.");
+          setStatus("error");
+        }
         return;
       }
+
       setStatus("success");
-      setForm({ firstName: "", lastName: "", email: "", company: "", message: "" });
+      setForm({ firstName: "", lastName: "", email: "", phone: "", company: "", message: "" });
+      setErrors({});
     } catch {
+      setServerError("Network error. Please check your connection.");
       setStatus("error");
-      setErrorMsg("Network error. Please check your connection.");
     }
   };
+
+  const inputClass = (field: keyof FormErrors) =>
+    `w-full bg-white border rounded-xl px-4 py-3 text-sm text-[#0A0A0A] focus:outline-none transition-colors ${
+      errors[field]
+        ? "border-red-400 focus:border-red-500"
+        : "border-gray-200 focus:border-[#F4511E]"
+    }`;
 
   return (
     <section className="pt-16 pb-20 lg:pt-20 lg:pb-28 bg-white min-h-screen">
       <div className="max-w-5xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+
           {/* Left */}
           <div>
             <div className="flex items-center gap-2 mb-6">
@@ -53,10 +135,8 @@ export default function ContactPage() {
               style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)" }}
             >
               Let&apos;s Build
-              <br />
-              Something
-              <br />
-              Great Together
+              <br />Something
+              <br />Great Together
             </h1>
             <p className="text-gray-500 text-base leading-relaxed mb-10">
               Whether you&apos;re looking to build a new application from
@@ -85,7 +165,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Right — Form */}
+          {/* Right */}
           <div className="bg-gray-50 rounded-3xl p-8">
             <h2 className="font-sans font-bold text-xl text-[#0A0A0A] mb-6">
               Send us a message
@@ -113,10 +193,11 @@ export default function ContactPage() {
               </div>
             ) : (
               <div className="space-y-4">
+                {/* Name */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">
-                      First Name
+                      First Name <span className="text-[#F4511E]">*</span>
                     </label>
                     <input
                       type="text"
@@ -124,12 +205,15 @@ export default function ContactPage() {
                       value={form.firstName}
                       onChange={handleChange}
                       placeholder="John"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0A0A0A] focus:outline-none focus:border-[#F4511E] transition-colors"
+                      className={inputClass("firstName")}
                     />
+                    {errors.firstName && (
+                      <p className="text-xs text-red-500 mt-1">{errors.firstName}</p>
+                    )}
                   </div>
                   <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">
-                      Last Name
+                      Last Name <span className="text-[#F4511E]">*</span>
                     </label>
                     <input
                       type="text"
@@ -137,13 +221,18 @@ export default function ContactPage() {
                       value={form.lastName}
                       onChange={handleChange}
                       placeholder="Doe"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0A0A0A] focus:outline-none focus:border-[#F4511E] transition-colors"
+                      className={inputClass("lastName")}
                     />
+                    {errors.lastName && (
+                      <p className="text-xs text-red-500 mt-1">{errors.lastName}</p>
+                    )}
                   </div>
                 </div>
+
+                {/* Email */}
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">
-                    Email Address
+                    Email Address <span className="text-[#F4511E]">*</span>
                   </label>
                   <input
                     type="email"
@@ -151,12 +240,35 @@ export default function ContactPage() {
                     value={form.email}
                     onChange={handleChange}
                     placeholder="john@company.com"
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0A0A0A] focus:outline-none focus:border-[#F4511E] transition-colors"
+                    className={inputClass("email")}
                   />
+                  {errors.email && (
+                    <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                  )}
                 </div>
+
+                {/* Phone */}
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">
-                    Company
+                    Phone Number <span className="text-[#F4511E]">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="+234 800 000 0000"
+                    className={inputClass("phone")}
+                  />
+                  {errors.phone && (
+                    <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+                  )}
+                </div>
+
+                {/* Company */}
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">
+                    Company <span className="text-gray-300 font-normal normal-case">(optional)</span>
                   </label>
                   <input
                     type="text"
@@ -167,9 +279,11 @@ export default function ContactPage() {
                     className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0A0A0A] focus:outline-none focus:border-[#F4511E] transition-colors"
                   />
                 </div>
+
+                {/* Message */}
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">
-                    Message
+                    Message <span className="text-[#F4511E]">*</span>
                   </label>
                   <textarea
                     name="message"
@@ -177,13 +291,17 @@ export default function ContactPage() {
                     onChange={handleChange}
                     rows={4}
                     placeholder="Tell us about your project..."
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0A0A0A] focus:outline-none focus:border-[#F4511E] transition-colors resize-none"
+                    className={`${inputClass("message")} resize-none`}
                   />
+                  {errors.message && (
+                    <p className="text-xs text-red-500 mt-1">{errors.message}</p>
+                  )}
                 </div>
 
+                {/* Server error */}
                 {status === "error" && (
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-                    <p className="text-sm text-red-600">{errorMsg}</p>
+                    <p className="text-sm text-red-600">{serverError}</p>
                   </div>
                 )}
 
@@ -200,9 +318,7 @@ export default function ContactPage() {
                       </svg>
                       Sending...
                     </>
-                  ) : (
-                    "Send Message"
-                  )}
+                  ) : "Send Message"}
                 </button>
               </div>
             )}
